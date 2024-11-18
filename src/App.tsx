@@ -8,14 +8,36 @@ import {Switch} from "@nextui-org/react";
 type userType = "Coach" | "Girl Scout (girl)";
 type user = {name: string, type: userType};
 type gatheringType = "Meeting" | "Competition";
+type fieldIds = {
+  year: string,
+  month: string,
+  day: string,
+  name: string,
+  userType: string,
+  gatheringType: string,
+};
 
-const yearFieldId = "entry.1123138479_year";
-const monthFieldId = "entry.1123138479_month";
-const dayFieldId = "entry.1123138479_day";
-const nameFieldId = "entry.1901206475";
-const userTypeFieldId = "entry.1291696105";
-const gatheringTypeFieldId = "entry.1042279849";
-const formId = "1FAIpQLScW7xWwIasw-T1QR51DJE97X9Ik2iwXAGLFZIH2xGmJjTiygg";
+const fieldIdsReal: fieldIds = {
+  year: "entry.1121903622_year",
+  month: "entry.1121903622_month",
+  day: "entry.1121903622_day",
+  name: "entry.918299607",
+  userType: "entry.874983456",
+  gatheringType: "entry.1953276186",
+};
+const formIdReal = "1FAIpQLSfCcFjxPyRLpuiBwhX04u1mp2T-ijACJv53Ty3-bEoyfxBxYw";
+
+const fieldIdsTest: fieldIds = {
+  year: "entry.1123138479_year",
+  month: "entry.1123138479_month",
+  day: "entry.1123138479_day",
+  name: "entry.1901206475",
+  userType: "entry.1291696105",
+  gatheringType: "entry.1042279849",
+};
+const formIdTest = "1FAIpQLScW7xWwIasw-T1QR51DJE97X9Ik2iwXAGLFZIH2xGmJjTiygg";
+
+let useTestForm = true;
 
 const users: user[] = [
   // Girl Scouts
@@ -51,12 +73,12 @@ let getFormSubmitUrl = (formId: string) =>
 const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, userType: userType, gatheringType: gatheringType) =>
   fetch(
     `${getFormSubmitUrl(formId)}&${new URLSearchParams({
-      [nameFieldId]: name,
-      [userTypeFieldId]: userType,
-      [gatheringTypeFieldId]: gatheringType,
-      [yearFieldId]: today.getFullYear().toString(),
-      [monthFieldId]: (today.getMonth() + 1).toString(),
-      [dayFieldId]: today.getDate().toString(),
+      [useTestForm ? fieldIdsTest.name : fieldIdsReal.name]: name,
+      [useTestForm ? fieldIdsTest.userType : fieldIdsReal.userType]: userType,
+      [useTestForm ? fieldIdsTest.gatheringType : fieldIdsReal.gatheringType]: gatheringType,
+      [useTestForm ? fieldIdsTest.year : fieldIdsReal.year]: today.getFullYear().toString(),
+      [useTestForm ? fieldIdsTest.month : fieldIdsReal.month]: (today.getMonth() + 1).toString(),
+      [useTestForm ? fieldIdsTest.day : fieldIdsReal.day]: today.getDate().toString(),
     }).toString()}`,
     { mode: 'no-cors' }
   )
@@ -114,7 +136,7 @@ function App() {
       <Button
         color="primary"
         onClick={() => teamMember?.name
-          ? submitGoogleFormViaPrefill(formId, new Date(), teamMember.name, userType, gatheringType)
+          ? submitGoogleFormViaPrefill(useTestForm ? formIdTest : formIdReal, new Date(), teamMember.name, userType, gatheringType)
           : alert("Please select a team member")}>
         Submit
       </Button>
