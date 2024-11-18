@@ -1,7 +1,7 @@
 import { useState } from 'react'
-// import logo from './assets/logo.png'
+import logo from './assets/logo.png'
 import './App.css'
-import {Autocomplete, AutocompleteItem, Button} from "@nextui-org/react";
+import {Autocomplete, AutocompleteItem, Button, Card, CardHeader, CardBody } from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
 
 
@@ -93,71 +93,80 @@ function App() {
 
   return (
     <div className="flex flex-col gap-4 items-center justify-center">
-      <div className="flex flex-wrap w-full md:flex-nowrap gap-4 flex-col items-center justify-center">
-        <Autocomplete
-        className="max-w-md"
-        label="Team Member"
-        placeholder="Select a team member"
-        isRequired
-        selectedKey={teamMember?.name}
-        onSelectionChange={key => {
-          const user = users.find(user => user.name === key);
-          if (user) {
-            setUserType(user.type);
-          }
-
-          setTeamMember(user ?? null);
-        }}
-      >
-        {users.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
-          <AutocompleteItem key={user.name} value={user.name}>
-            {user.name}
-          </AutocompleteItem>
-        ))}
-      </Autocomplete>
-      <div className="flex flex-col gap-2 items-start">
-        <Switch isSelected={userType === "Coach"} onValueChange={value => setUserType(value ? "Coach" : "Girl Scout (girl)")}>
-          <div className="flex flex-row gap-2 items-center">
-            <div>Team Member type:</div>
-            {userType === "Coach" ?
-              <div className="font-bold text-sky-500">Coach</div> :
-              <div className="font-bold text-indigo-500">Girl Scout</div>}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-row w-full items-center justify-center">
+            <img src={logo} className="w-28" />
           </div>
-        </Switch>
-        <Switch isSelected={gatheringType === "Competition"} onValueChange={value => setGatheringType(value ? "Competition" : "Meeting")}>
-          <div className="flex flex-row gap-2 items-center">
-            <div>Gathering type:</div>
-            {gatheringType === "Competition" ?
-                <div className="font-bold text-sky-500">Competition</div> :
-                <div className="font-bold text-indigo-500">Meeting</div>}
+        </CardHeader>
+        <CardBody>
+          <div className="flex flex-wrap w-96 md:flex-nowrap gap-4 flex-col items-center justify-center">
+            <Autocomplete
+              className="w-auto"
+              label="Team Member"
+              placeholder="Select a team member"
+              isRequired
+              selectedKey={teamMember?.name}
+              onSelectionChange={key => {
+                const user = users.find(user => user.name === key);
+                if (user) {
+                  setUserType(user.type);
+                }
+
+                setTeamMember(user ?? null);
+              }}
+            >
+              {users.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
+                <AutocompleteItem key={user.name} value={user.name}>
+                  {user.name}
+                </AutocompleteItem>
+              ))}
+            </Autocomplete>
+            <div className="flex flex-col gap-2 items-start w-72">
+              <Switch isSelected={userType === "Coach"} onValueChange={value => setUserType(value ? "Coach" : "Girl Scout (girl)")}>
+                <div className="flex flex-row gap-2 items-center">
+                  <div>Team Member type:</div>
+                  {userType === "Coach" ?
+                    <div className="font-bold text-sky-500">Coach</div> :
+                    <div className="font-bold text-indigo-500">Girl Scout</div>}
+                </div>
+              </Switch>
+              <Switch isSelected={gatheringType === "Competition"} onValueChange={value => setGatheringType(value ? "Competition" : "Meeting")}>
+                <div className="flex flex-row gap-2 items-center">
+                  <div>Gathering type:</div>
+                  {gatheringType === "Competition" ?
+                      <div className="font-bold text-sky-500">Competition</div> :
+                      <div className="font-bold text-indigo-500">Meeting</div>}
+                  </div>
+                </Switch>
+              </div>
+              <Button
+                color="primary"
+                isLoading={submitState === "submitting"}
+                onClick={() => {
+                  if (!teamMember?.name) {
+                    alert("Please select a team member");
+                  } else {
+                    setSubmitState("submitting");
+                    submitGoogleFormViaPrefill(
+                      useTestForm ? formIdTest : formIdReal,
+                      new Date(),
+                      teamMember.name,
+                      userType,
+                      gatheringType
+                    )
+                    .then(() => setSubmitState("success"))
+                    .catch(() => setSubmitState("error"));
+                  }
+                }}
+              >
+                Submit
+              </Button>
+              {submitState === "success" && <div className="text-green-500">Form submitted</div>}
+              {submitState === "error" && <div className="text-red-500">Error submitting form</div>}
             </div>
-          </Switch>
-        </div>
-      </div>
-      <Button
-        color="primary"
-        isLoading={submitState === "submitting"}
-        onClick={() => {
-          if (!teamMember?.name) {
-            alert("Please select a team member");
-          } else {
-            setSubmitState("submitting");
-            submitGoogleFormViaPrefill(
-              useTestForm ? formIdTest : formIdReal,
-              new Date(),
-              teamMember.name,
-              userType,
-              gatheringType
-            )
-            .then(() => setSubmitState("success"))
-            .catch(() => setSubmitState("error"));
-          }
-        }}
-      >
-        Submit
-      </Button>
-      {submitState === "success" && <div className="text-green-500">Form submitted</div>}
-      {submitState === "error" && <div className="text-red-500">Error submitting form</div>}
+        </CardBody>
+      </Card>
     </div>
   );
 }
