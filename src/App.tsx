@@ -81,14 +81,15 @@ const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, us
       [useTestForm ? fieldIdsTest.day : fieldIdsReal.day]: today.getDate().toString(),
     }).toString()}`,
     { mode: 'no-cors' }
-  )
-  .then(() => console.log('Form submitted'))
-  .catch(error => console.error('Error:', error));
+  );
+
+type submitState = "idle" | "submitting" | "success" | "error";
 
 function App() {
   const [teamMember, setTeamMember] = useState<user | null>(null);
   const [userType, setUserType] = useState<userType>("Coach");
   const [gatheringType, setGatheringType] = useState<gatheringType>("Meeting");
+  const [submitState, setSubmitState] = useState<submitState>("idle");
 
   return (
     <div className="flex flex-col gap-4 items-center justify-center">
@@ -135,11 +136,28 @@ function App() {
       </div>
       <Button
         color="primary"
-        onClick={() => teamMember?.name
-          ? submitGoogleFormViaPrefill(useTestForm ? formIdTest : formIdReal, new Date(), teamMember.name, userType, gatheringType)
-          : alert("Please select a team member")}>
+        isLoading={submitState === "submitting"}
+        onClick={() => {
+          if (!teamMember?.name) {
+            alert("Please select a team member");
+          } else {
+            setSubmitState("submitting");
+            submitGoogleFormViaPrefill(
+              useTestForm ? formIdTest : formIdReal,
+              new Date(),
+              teamMember.name,
+              userType,
+              gatheringType
+            )
+            .then(() => setSubmitState("success"))
+            .catch(() => setSubmitState("error"));
+          }
+        }}
+      >
         Submit
       </Button>
+      {submitState === "success" && <div className="text-green-500">Form submitted</div>}
+      {submitState === "error" && <div className="text-red-500">Error submitting form</div>}
     </div>
   );
 }
