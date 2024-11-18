@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import logo from './assets/logo.png'
+// import logo from './assets/logo.png'
 import './App.css'
 import {Autocomplete, AutocompleteItem, Button} from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
