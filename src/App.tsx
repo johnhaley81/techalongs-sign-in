@@ -5,7 +5,7 @@ import {Autocomplete, AutocompleteItem, Button} from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
 
 
-type userType = "Coach" | "Girl Scout";
+type userType = "Coach" | "Girl Scout (girl)";
 type user = {name: string, type: userType};
 type gatheringType = "Meeting" | "Competition";
 
@@ -19,7 +19,7 @@ const formId = "1FAIpQLScW7xWwIasw-T1QR51DJE97X9Ik2iwXAGLFZIH2xGmJjTiygg";
 
 const users: user[] = [
   {name: "John Doe", type: "Coach"},
-  {name: "Jane Doe", type: "Girl Scout"},
+  {name: "Jane Doe", type: "Girl Scout (girl)"},
 ];
 
 let getFormSubmitUrl = (formId: string) =>
@@ -70,7 +70,7 @@ function App() {
         ))}
       </Autocomplete>
       <div className="flex flex-col gap-2 items-start">
-        <Switch isSelected={userType === "Coach"} onValueChange={value => setUserType(value ? "Coach" : "Girl Scout")}>
+        <Switch isSelected={userType === "Coach"} onValueChange={value => setUserType(value ? "Coach" : "Girl Scout (girl)")}>
           <div className="flex flex-row gap-2 items-center">
             <div>Team Member type:</div>
             {userType === "Coach" ?
