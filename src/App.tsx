@@ -155,7 +155,10 @@ function App() {
                       userType,
                       gatheringType
                     )
-                    .then(() => setSubmitState("success"))
+                    .then(() => {
+                      setSubmitState("success");
+                      setTimeout(() => setSubmitState("idle"), 10000);
+                    })
                     .catch(() => setSubmitState("error"));
                   }
                 }}
