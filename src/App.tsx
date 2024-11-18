@@ -18,8 +18,31 @@ const gatheringTypeFieldId = "entry.1042279849";
 const formId = "1FAIpQLScW7xWwIasw-T1QR51DJE97X9Ik2iwXAGLFZIH2xGmJjTiygg";
 
 const users: user[] = [
-  {name: "John Doe", type: "Coach"},
-  {name: "Jane Doe", type: "Girl Scout (girl)"},
+  // Girl Scouts
+  {name: "Lila Doan", type: "Girl Scout (girl)"},
+  {name: "Maya Hamer", type: "Girl Scout (girl)"},
+  {name: "Eleanor Lam", type: "Girl Scout (girl)"},
+  {name: "Alice Augustine", type: "Girl Scout (girl)"},
+  {name: "Margot Davis", type: "Girl Scout (girl)"},
+  {name: "Illiana Sinkwitz", type: "Girl Scout (girl)"},
+  {name: "Emily Morrow", type: "Girl Scout (girl)"},
+  {name: "Victoria Roudin", type: "Girl Scout (girl)"},
+  {name: "Aria Haley", type: "Girl Scout (girl)"},
+  {name: "Anna McCuistion", type: "Girl Scout (girl)"},
+
+  // Coaches
+  {name: "Diana Laulainen-Schein", type: "Coach"},
+  {name: "Lia Ryan", type: "Coach"},
+  {name: "Christine Langevin", type: "Coach"},
+  {name: "Ariana Schein", type: "Coach"},
+  {name: "Austin Banghart", type: "Coach"},
+  {name: "David Augustine", type: "Coach"},
+  {name: "Rebbekka Hirsch", type: "Coach"},
+  {name: "Kelly Bellas", type: "Coach"},
+  {name: "Lee Kline", type: "Coach"},
+  {name: "John Haley", type: "Coach"},
+  {name: "Shawn Roduin", type: "Coach"},
+  {name: "Dave McCuistion", type: "Coach"},
 ];
 
 let getFormSubmitUrl = (formId: string) =>
@@ -63,7 +86,7 @@ function App() {
           setTeamMember(user ?? null);
         }}
       >
-        {users.map((user) => (
+        {users.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
           <AutocompleteItem key={user.name} value={user.name}>
             {user.name}
           </AutocompleteItem>
