@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import logo from './assets/logo.png'
-import './App.css'
+import { useEffect, useState } from "react"
+import logo from "./assets/logo.png"
+import "./App.css"
 import {Autocomplete, AutocompleteItem, Button, Card, CardHeader, CardBody } from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
 
@@ -80,16 +80,32 @@ const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, us
       [useTestForm ? fieldIdsTest.month : fieldIdsReal.month]: (today.getMonth() + 1).toString(),
       [useTestForm ? fieldIdsTest.day : fieldIdsReal.day]: today.getDate().toString(),
     }).toString()}`,
-    { mode: 'no-cors' }
+    { mode: "no-cors" }
   );
 
 type submitState = "idle" | "submitting" | "success" | "error";
+
+const applyTheme = (theme: "light" | "dark") => {
+  if (theme === "light") {
+    document.body.classList.remove("dark");
+  } else {
+    document.body.classList.add("dark");
+  }
+}
 
 function App() {
   const [teamMember, setTeamMember] = useState<user | null>(null);
   const [userType, setUserType] = useState<userType>("Coach");
   const [gatheringType, setGatheringType] = useState<gatheringType>("Meeting");
   const [submitState, setSubmitState] = useState<submitState>("idle");
+
+  useEffect(() => {
+    applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) =>
+      applyTheme(matches ? "dark" : "light")
+    );
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 items-center justify-center">
