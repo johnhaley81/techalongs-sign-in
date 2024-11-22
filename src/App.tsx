@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react"
 import logo from "./assets/logo.png"
 import "./App.css"
-import {Autocomplete, AutocompleteItem, Button, Card, CardHeader, CardBody } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Select,
+  SelectItem,
+  Selection
+} from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
 
 
@@ -68,7 +76,7 @@ const users: user[] = [
 ];
 
 let getFormSubmitUrl = (formId: string) =>
-    `https://docs.google.com/forms/d/e/${formId}/formResponse?usp=pp_url`;
+  `https://docs.google.com/forms/d/e/${formId}/formResponse?usp=pp_url`;
 
 const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, userType: userType, gatheringType: gatheringType) =>
   fetch(
@@ -81,21 +89,37 @@ const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, us
       [useTestForm ? fieldIdsTest.day : fieldIdsReal.day]: today.getDate().toString(),
     }).toString()}`,
     { mode: "no-cors" }
-  );
+  )
+  .then(() => undefined);
+
+const baseDelay = 8000;
+const delayVariance = 7000;
+const addDelay = () => new Promise(resolve => setTimeout(resolve, baseDelay + Math.random() * delayVariance));
+
+const submitTeamMembers = (
+  formId: string,
+  teamMembers: Selection,
+  gatheringType: gatheringType
+) =>
+  Array.from(teamMembers)
+  .map(userName => users.find(user => user.name === userName))
+  .reduce(
+    (acc, user) =>
+      acc.then(() => user
+        ? addDelay()
+          .then(() => submitGoogleFormViaPrefill(formId, new Date(), user.name, user.type, gatheringType))
+        : Promise.resolve()),
+    Promise.resolve());
 
 type submitState = "idle" | "submitting" | "success" | "error";
 
-const applyTheme = (theme: "light" | "dark") => {
-  if (theme === "light") {
-    document.body.classList.remove("dark");
-  } else {
-    document.body.classList.add("dark");
-  }
-}
+const applyTheme = (theme: "light" | "dark") =>
+  theme === "light"
+    ? document.body.classList.remove("dark")
+    : document.body.classList.add("dark");
 
 function App() {
-  const [teamMember, setTeamMember] = useState<user | null>(null);
-  const [userType, setUserType] = useState<userType>("Coach");
+  const [teamMembers, setTeamMembers] = useState<Selection>(new Set([]));
   const [gatheringType, setGatheringType] = useState<gatheringType>("Meeting");
   const [submitState, setSubmitState] = useState<submitState>("idle");
 
@@ -117,36 +141,22 @@ function App() {
         </CardHeader>
         <CardBody>
           <div className="flex flex-wrap w-96 md:flex-nowrap gap-4 flex-col items-center justify-center">
-            <Autocomplete
-              className="w-auto"
+            <Select
+              className="w-auto max-w-sm"
               label="Team Member"
               placeholder="Select a team member"
               isRequired
-              selectedKey={teamMember?.name}
-              onSelectionChange={key => {
-                const user = users.find(user => user.name === key);
-                if (user) {
-                  setUserType(user.type);
-                }
-
-                setTeamMember(user ?? null);
-              }}
+              selectedKeys={teamMembers}
+              selectionMode="multiple"
+              onSelectionChange={setTeamMembers}
             >
               {users.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
-                <AutocompleteItem key={user.name} value={user.name}>
+                <SelectItem key={user.name} value={user.name}>
                   {user.name}
-                </AutocompleteItem>
+                </SelectItem>
               ))}
-            </Autocomplete>
+            </Select>
             <div className="flex flex-col gap-2 items-start w-72">
-              <Switch isSelected={userType === "Coach"} onValueChange={value => setUserType(value ? "Coach" : "Girl Scout (girl)")}>
-                <div className="flex flex-row gap-2 items-center">
-                  <div>Team Member type:</div>
-                  {userType === "Coach" ?
-                    <div className="font-bold text-sky-500">Coach</div> :
-                    <div className="font-bold text-indigo-500">Girl Scout</div>}
-                </div>
-              </Switch>
               <Switch isSelected={gatheringType === "Competition"} onValueChange={value => setGatheringType(value ? "Competition" : "Meeting")}>
                 <div className="flex flex-row gap-2 items-center">
                   <div>Gathering type:</div>
@@ -158,17 +168,17 @@ function App() {
               </div>
               <Button
                 color="primary"
+                isDisabled={Array.from(teamMembers).length === 0}
                 isLoading={submitState === "submitting"}
                 onClick={() => {
-                  if (!teamMember?.name) {
+                  if (Array.from(teamMembers).length === 0) {
                     alert("Please select a team member");
                   } else {
+                    setTeamMembers(new Set([]));
                     setSubmitState("submitting");
-                    submitGoogleFormViaPrefill(
+                    submitTeamMembers(
                       useTestForm ? formIdTest : formIdReal,
-                      new Date(),
-                      teamMember.name,
-                      userType,
+                      teamMembers,
                       gatheringType
                     )
                     .then(() => {
