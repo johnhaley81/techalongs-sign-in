@@ -8,12 +8,13 @@ import {
   CardBody,
   Select,
   SelectItem,
-  Selection
+  Selection,
+  SelectSection
 } from "@nextui-org/react";
 import {Switch} from "@nextui-org/react";
 
-
-type userType = "Coach" | "Girl Scout (girl)";
+type teamMemberType = "Coach" | "Girl Scout (girl)";
+type userType = teamMemberType | "Parent";
 type user = {name: string, type: userType};
 type gatheringType = "Meeting" | "Competition";
 type fieldIds = {
@@ -24,6 +25,35 @@ type fieldIds = {
   userType: string,
   gatheringType: string,
 };
+
+const assertNever = (x: never): never => {
+  throw new Error(`Unexpected value: ${x}`);
+}
+
+const userTypeToTeamMemberType = (userType: userType): teamMemberType => {
+  switch (userType) {
+    case "Coach":
+    case "Parent":
+      return "Coach";
+    case "Girl Scout (girl)":
+      return "Girl Scout (girl)";
+    default:
+      return assertNever(userType);
+  }
+}
+
+const userTypeToTitle = (userType: userType): string => {
+  switch (userType) {
+    case "Coach":
+      return "Coach";
+    case "Parent":
+      return "Parent";
+    case "Girl Scout (girl)":
+      return "Girl Scout";
+    default:
+      return assertNever(userType);
+  }
+}
 
 const fieldIdsReal: fieldIds = {
   year: "entry.1121903622_year",
@@ -59,6 +89,10 @@ const users: user[] = [
   {name: "Victoria Roudin", type: "Girl Scout (girl)"},
   {name: "Aria Haley", type: "Girl Scout (girl)"},
   {name: "Anna McCuistion", type: "Girl Scout (girl)"},
+  {name: "Sammie Shockness", type: "Girl Scout (girl)"},
+  {name: "Delaney McDaniel", type: "Girl Scout (girl)"},
+  {name: "Athena Wimsatt", type: "Girl Scout (girl)"},
+  {name: "Shawn Roduin", type: "Coach"},
 
   // Coaches
   {name: "Diana Laulainen-Schein", type: "Coach"},
@@ -73,12 +107,29 @@ const users: user[] = [
   {name: "John Haley", type: "Coach"},
   {name: "Shawn Roduin", type: "Coach"},
   {name: "Dave McCuistion", type: "Coach"},
+
+  // Parents
+  {name: "Liz Sinkwitz", type: "Parent"},
+  {name: "Cecilia Fu", type: "Parent"},
+  {name: "Gilbert Lam", type: "Parent"},
+  {name: "Sara Haley", type: "Parent"},
+  {name: "Lee Kline", type: "Parent"},
+  {name: "Maria McDaniel", type: "Parent"},
+  {name: "Ashlye Kennedy", type: "Parent"},
+  {name: "Andrea Augustine", type: "Parent"},
+  {name: "Shannon Mullarkey", type: "Parent"},
 ];
 
 let getFormSubmitUrl = (formId: string) =>
   `https://docs.google.com/forms/d/e/${formId}/formResponse?usp=pp_url`;
 
-const submitGoogleFormViaPrefill = (formId: string, today:Date, name: string, userType: userType, gatheringType: gatheringType) =>
+const submitGoogleFormViaPrefill = (
+  formId: string,
+  today:Date,
+  name: string,
+  userType: teamMemberType,
+  gatheringType: gatheringType
+) =>
   fetch(
     `${getFormSubmitUrl(formId)}&${new URLSearchParams({
       [useTestForm ? fieldIdsTest.name : fieldIdsReal.name]: name,
@@ -107,7 +158,13 @@ const submitTeamMembers = (
     (acc, user) =>
       acc.then(() => user
         ? addDelay()
-          .then(() => submitGoogleFormViaPrefill(formId, new Date(), user.name, user.type, gatheringType))
+          .then(() => submitGoogleFormViaPrefill(
+            formId,
+            new Date(),
+            user.name,
+            userTypeToTeamMemberType(user.type),
+            gatheringType
+          ))
         : Promise.resolve()),
     Promise.resolve());
 
@@ -117,6 +174,18 @@ const applyTheme = (theme: "light" | "dark") =>
   theme === "light"
     ? document.body.classList.remove("dark")
     : document.body.classList.add("dark");
+
+const renderUsers = (users: user[], type: userType, showDivider: boolean) =>
+  <SelectSection showDivider={showDivider} title={userTypeToTitle(type)}>
+    {users
+      .filter(user => user.type === type)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((user) => (
+    <SelectItem key={user.name} value={user.name}>
+      {user.name}
+        </SelectItem>
+      ))}
+  </SelectSection>;
 
 function App() {
   const [teamMembers, setTeamMembers] = useState<Selection>(new Set([]));
@@ -150,11 +219,9 @@ function App() {
               selectionMode="multiple"
               onSelectionChange={setTeamMembers}
             >
-              {users.sort((a, b) => a.name.localeCompare(b.name)).map((user) => (
-                <SelectItem key={user.name} value={user.name}>
-                  {user.name}
-                </SelectItem>
-              ))}
+              {renderUsers(users, "Girl Scout (girl)", true)}
+              {renderUsers(users, "Coach", true)}
+              {renderUsers(users, "Parent", false)}
             </Select>
             <div className="flex flex-col gap-2 items-start w-72">
               <Switch isSelected={gatheringType === "Competition"} onValueChange={value => setGatheringType(value ? "Competition" : "Meeting")}>
